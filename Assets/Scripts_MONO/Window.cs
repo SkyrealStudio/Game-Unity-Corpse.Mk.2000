@@ -8,7 +8,7 @@ public class Window : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
 {
     private static Window instance;
     public List<Window> innerWindows;
-
+    private Vector2 dragOffset;
     //public Button button;
 
     public IPointerClickHandler controllerClose;
@@ -29,18 +29,18 @@ public class Window : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Entered:" + name);    
+        //Debug.Log("Entered:" + name);    
     }
     public void OnPointerExit(PointerEventData eventData)
     {
-         Debug.Log("Exited:" + name);
+        //Debug.Log("Exited:" + name);
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if(eventData.button == PointerEventData.InputButton.Left)
         {
-            Debug.Log("Pressed:" + name);
+            //Debug.Log("Pressed:" + name);
         }
     }
 
@@ -55,16 +55,37 @@ public class Window : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler,
 
     public Canvas canvas;
 
+    public void BeginDragHandler(BaseEventData data)
+    {
+        Debug.Log("BeginDrag!");
+        PointerEventData pointerData = (PointerEventData)data;
+
+        Vector2 mouseRectPosition;
+        //get rect position of the mouse in the canvas
+        RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)canvas.transform,
+            pointerData.position,
+            canvas.worldCamera,
+            out mouseRectPosition);
+
+        dragOffset = mouseRectPosition - (Vector2)GetComponent<RectTransform>().localPosition;
+        Debug.Log("BeginDrag - OffsetPosition:" + dragOffset);
+    }
+    
     public void DragHandler(BaseEventData data)
+    //Used by EventTrigger as a component dddd
     {
         PointerEventData pointerData = (PointerEventData)data;
 
-        Vector2 position;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            (RectTransform)canvas.transform,
+        Vector2 mouseRectPosition;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)canvas.transform,
             pointerData.position,
             canvas.worldCamera,
-            out position);
-        transform.position = canvas.transform.TransformPoint(position);
+            out mouseRectPosition);
+
+        transform.position = canvas.transform.TransformPoint(mouseRectPosition-dragOffset);
+    }
+    public void EndDragHandler(BaseEventData data)
+    {
+        Debug.Log("EndDrag!");
     }
 }
